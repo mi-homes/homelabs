@@ -27,6 +27,17 @@ This repository contains the infrastructure as code, application deployments, an
 - `kcluster` - Kubernetes cluster
 - `knode` - Kubernetes node
 
+## K3s Ansible
+This is based on https://github.com/techno-tim/k3s-ansible
+
+- `./install_ansible.sh`
+- Follow the guide to deploy the k3s cluster
+- `scp -i ~/src/.ssh/pvm-ubuntu-cloud ubuntu@192.168.68.201:~/.kube/config ~/.kube/config`
+- Then may need to install kubectl commands on the dev machine
+- `echo 'alias k="kubectl"' >> ~/.bashrc`
+- `source ~/.bashrc`
+- The k3s cluster is then ready to use
+
 ## Contributing
 
 This is a personal homelab project. For issues and improvements, please create GitHub issues.

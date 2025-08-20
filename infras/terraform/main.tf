@@ -32,7 +32,7 @@ resource "proxmox_virtual_environment_vm" "cloudinit-k3s-master" {
 
   initialization {
     user_account {
-      username = "minh"
+      username = "ubuntu"
       keys     = [file("~/src/.ssh/pvm-ubuntu-cloud.pub")]
     }
     
@@ -77,7 +77,7 @@ resource "proxmox_virtual_environment_vm" "cloudinit-k3s-worker" {
 
   initialization {
     user_account {
-      username = "minh"
+      username = "ubuntu"
       keys     = [file("~/src/.ssh/pvm-ubuntu-cloud.pub")]
     }
     
