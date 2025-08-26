@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex-k3s
+  namespace: plex
+  labels:
+    app: plex-k3s
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: plex-k3s
+  template:
+    metadata:
+      labels:
+        app: plex-k3s
+    spec:
+      containers:
+      - name: plex-k3s-pms
+        image: index.docker.io/plexinc/pms-docker:1.42.1.10054-f333bdaa8
+        ports:
+        - containerPort: 32400
+          name: pms
+        env:
+        - name: PLEX_CLAIM
+          value: "YOUR_PLEX_CLAIM_TOKEN"
+        - name: PLEX_SERVER_NAME
+          value: "YOUR_PLEX_SERVER_NAME"
+        volumeMounts:
+        - name: pms-config
+          mountPath: /config
+        - name: pms-transcode
+
+        
+          mountPath: /transcode
+        - name: plex-media
+          mountPath: /media/plex
+      volumes:
+      - name: pms-transcode
+        emptyDir: {}
+      - name: pms-config
+        persistentVolumeClaim:
+          claimName: plex-config-pvc
+      - name: plex-media
+        persistentVolumeClaim:
+          claimName: plex-media-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-k3s
+  namespace: plex
+  labels:
+    app: plex-k3s
+spec:
+  type: LoadBalancer
+  loadBalancerIP: YOUR_LOADBALANCER_IP
+  ports:
+  - port: 32400
+    targetPort: 32400
+    protocol: TCP
+    name: pms
+  selector:
+    app: plex-k3s

@@ -38,6 +38,49 @@ This is based on https://github.com/techno-tim/k3s-ansible
 - `source ~/.bashrc`
 - The k3s cluster is then ready to use
 
+## Plex and NFS CSI Setup
+
+### Configuration
+
+#### Environment Variables
+
+Copy the example configuration file and update it with your values:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your actual values:
+
+- `SYNOLOGY_NAS_IP`: Your Synology NAS IP address
+- `SYNOLOGY_NAS_SHARE`: NFS share path on your NAS
+- `PLEX_CLAIM_TOKEN`: Get from https://www.plex.tv/claim/ (valid for 4 minutes)
+- `PLEX_LOADBALANCER_IP`: Your desired LoadBalancer IP
+- `PLEX_SERVER_NAME`: Your Plex server name
+
+#### Plex Installation Steps
+
+1. Install NFS CSI Driver:
+   ```bash
+   cd kubernetes/nfs-csi
+   ./install.sh
+   ```
+
+2. Create Plex namespace:
+   ```bash
+   kubectl create namespace plex
+   ```
+
+3. Apply Plex PVCs:
+   ```bash
+   kubectl apply -f plex/plex-pvc.yaml
+   ```
+
+4. Deploy Plex:
+   ```bash
+   kubectl apply -f plex/plex-deployment.yaml
+   ```
+
 ## Contributing
 
 This is a personal homelab project. For issues and improvements, please create GitHub issues.
