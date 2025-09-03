@@ -73,12 +73,12 @@ Edit `.env` with your actual values:
 
 3. Apply Plex PVCs:
    ```bash
-   kubectl apply -f plex/plex-pvc.yaml
+   kubectl apply -f plex/pvc.yaml
    ```
 
 4. Deploy Plex:
    ```bash
-   kubectl apply -f plex/plex-deployment.yaml
+   kubectl apply -f plex/deployment.yaml
    ```
 
 ## Contributing

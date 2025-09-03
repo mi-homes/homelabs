@@ -30,8 +30,6 @@ spec:
         - name: pms-config
           mountPath: /config
         - name: pms-transcode
-
-        
           mountPath: /transcode
         - name: plex-media
           mountPath: /media/plex
