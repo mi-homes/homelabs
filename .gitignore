@@ -23,9 +23,12 @@ kubeconfig
 *.p12
 *.pfx
 secrets/
+secrets.yaml
+*.secret
 .env
 .env.local
 .env.*.local
+.env.production
 
 # Logs
 *.log
@@ -82,7 +85,12 @@ wheels/
 *.bak
 *.backup
 *.old
+*.orig
 
 # Local configuration overrides
 local/
 override/
+
+# Helm charts
+charts/
+Chart.lock

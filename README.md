@@ -38,19 +38,22 @@ This is based on https://github.com/techno-tim/k3s-ansible
 - `source ~/.bashrc`
 - The k3s cluster is then ready to use
 
-## Plex and NFS CSI Setup
+## NFS CSI Setup
+
+### Installation
+
+Install the NFS CSI Driver to enable NFS volume support in Kubernetes:
+
+```bash
+cd kubernetes/nfs-csi
+./install.sh
+```
+
+## Plex Setup
 
 ### Configuration
 
-#### Environment Variables
-
-Copy the example configuration file and update it with your values:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your actual values:
+Configure the following values in the deployment files:
 
 - `SYNOLOGY_NAS_IP`: Your Synology NAS IP address
 - `SYNOLOGY_NAS_SHARE`: NFS share path on your NAS
@@ -58,27 +61,123 @@ Edit `.env` with your actual values:
 - `PLEX_LOADBALANCER_IP`: Your desired LoadBalancer IP
 - `PLEX_SERVER_NAME`: Your Plex server name
 
-#### Plex Installation Steps
+#### Installation Steps
 
-1. Install NFS CSI Driver:
-   ```bash
-   cd kubernetes/nfs-csi
-   ./install.sh
-   ```
-
-2. Create Plex namespace:
+1. Create Plex namespace:
    ```bash
    kubectl create namespace plex
    ```
 
-3. Apply Plex PVCs:
+2. Apply Plex PVCs:
    ```bash
    kubectl apply -f plex/pvc.yaml
    ```
 
-4. Deploy Plex:
+3. Deploy Plex:
    ```bash
    kubectl apply -f plex/deployment.yaml
+   ```
+
+## Immich Setup
+
+Immich is a self-hosted photo and video backup solution. This directory contains the Kubernetes configuration files for deploying Immich.
+
+### Prerequisites
+
+- Kubernetes cluster with NFS CSI driver support
+- Helm 3.x
+- NFS server accessible from the cluster
+- Domain name for ingress (optional)
+
+### Configuration
+
+#### 1. Configure Secrets
+
+Before deploying, you need to create the secrets file with your actual values:
+
+```bash
+# Copy the template
+cp immich/secrets.yaml.template immich/secrets.yaml
+
+# Edit the secrets file with your actual values
+nano immich/secrets.yaml
+```
+
+Replace the following placeholder values in `secrets.yaml`:
+
+- `CHANGE_ME_DB_PASSWORD`: Strong password for PostgreSQL database
+- `CHANGE_ME_JWT_SECRET`: Secure random key for JWT authentication (generate with `openssl rand -base64 32`)
+
+#### 2. Update Configuration Files
+
+Update the following files with your actual values:
+
+- `immich/values.yaml`: Replace `CHANGE_ME_DOMAIN_NAME` with your domain name (e.g., `immich.example.com`)
+- `immich/pvc.yaml`: Replace `CHANGE_ME_NFS_SERVER_IP` with your NFS server IP
+
+### Installation Steps
+
+1. Create Immich namespace:
+   ```bash
+   kubectl create namespace immich
+   ```
+
+2. Apply secrets:
+   ```bash
+   kubectl apply -f immich/secrets.yaml
+   ```
+
+3. Apply NFS PVCs:
+   ```bash
+   kubectl apply -f immich/pvc.yaml
+   ```
+
+4. Deploy PostgreSQL:
+   ```bash
+   kubectl apply -f immich/postgres.yaml
+   ```
+
+5. Deploy Immich using Helm:
+   ```bash
+   helm repo add immich https://immich-app.github.io/immich-helm
+   helm repo update
+   helm upgrade --install immich immich/immich -f immich/values.yaml -n immich
+   ```
+
+6. Apply the strategic merge patch for additional volumes:
+   ```bash
+   kubectl patch deployment immich-server -n immich --patch-file immich/patch.yaml
+   ```
+
+### Upgrading
+
+To upgrade Immich:
+
+```bash
+# Update Helm repository
+helm repo update
+
+# Upgrade the release
+helm upgrade immich immich/immich -f immich/values.yaml -n immich
+```
+
+### Removal Steps
+
+1. Uninstall Helm release:
+   ```bash
+   helm uninstall immich -n immich
+   ```
+
+2. Remove PVCs:
+   ```bash
+   kubectl delete pvc --all -n immich
+   ```
+
+3. Delete released PVs if needed
+
+4. (Optional) Remove namespace:
+   ```bash
+   kubectl delete namespace immich
    ```
 
 ## Contributing
