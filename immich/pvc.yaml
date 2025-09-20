@@ -142,7 +142,7 @@ spec:
   capacity:
     storage: 1Ti
   accessModes:
-    - ReadOnlyMany
+    - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
   storageClassName: nfs-csi
   csi:
@@ -163,7 +163,7 @@ metadata:
     component: library-storage
 spec:
   accessModes:
-    - ReadOnlyMany
+    - ReadWriteMany
   storageClassName: nfs-csi
   resources:
     requests:
