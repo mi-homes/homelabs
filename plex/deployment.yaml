@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: plex-k3s-pms
-        image: index.docker.io/plexinc/pms-docker:1.42.1.10054-f333bdaa8
+        image: index.docker.io/plexinc/pms-docker:1.42.2.10156-f737b826c
         ports:
         - containerPort: 32400
           name: pms
