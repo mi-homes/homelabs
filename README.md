@@ -141,12 +141,12 @@ Update the following files with your actual values:
    ```bash
    helm repo add immich https://immich-app.github.io/immich-helm
    helm repo update
-   helm upgrade --install immich immich/immich -f immich/values.yaml -n immich
+   helm -n immich install immich immich/immich -f immich/values.yaml
    ```
 
 6. Apply the strategic merge patch for additional volumes:
    ```bash
-   kubectl patch deployment immich-server -n immich --patch-file immich/patch.yaml
+   kubectl -n immich patch deployment immich-server --patch-file immich/patch.yaml
    ```
 
 ### Upgrading
@@ -158,19 +158,19 @@ To upgrade Immich:
 helm repo update
 
 # Upgrade the release
-helm upgrade immich immich/immich -f immich/values.yaml -n immich
+helm -n immich upgrade immich immich/immich -f immich/values.yaml
 ```
 
 ### Removal Steps
 
 1. Uninstall Helm release:
    ```bash
-   helm uninstall immich -n immich
+   helm -n immich uninstall immich
    ```
 
 2. Remove PVCs:
    ```bash
-   kubectl delete pvc --all -n immich
+   kubectl -n immich delete pvc --all
    ```
 
 3. Delete released PVs if needed
