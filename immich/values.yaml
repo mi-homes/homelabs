@@ -25,7 +25,7 @@ envFrom:
       name: immich-app-secret
 
 image:
-  tag: v2.0.1
+  tag: v2.1.0
 
 immich:
   metrics:
