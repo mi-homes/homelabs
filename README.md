@@ -49,18 +49,15 @@ sudo apt update && sudo apt install -y ansible-core
 ```
 
 #### 3. Get kubeconfig from k3s cluster
+- Make sure you have the SSH key `~/.ssh/pvm-ubuntu-cloud` available
+
 ```bash
 mkdir -p ~/.kube
-
 scp -i ~/.ssh/pvm-ubuntu-cloud ansibleuser@192.168.68.201:~/.kube/config ~/.kube/config
-
-# If needed, fix the server endpoint (change from 127.0.0.1:6443 to cluster IP)
-sed -i 's|server: https://127.0.0.1:6443|server: https://192.168.68.240:6443|' ~/.kube/config
 ```
 
 #### 4. Verify connection
 ```bash
-kubectl get nodes
 kubectl get pods --all-namespaces
 ```
 
@@ -69,9 +66,6 @@ kubectl get pods --all-namespaces
 echo 'alias k="kubectl"' >> ~/.bashrc
 source ~/.bashrc
 ```
-
-**Important Notes:**
-- Make sure you have the SSH key `~/.ssh/pvm-ubuntu-cloud` available
 
 ## NFS CSI Setup
 
