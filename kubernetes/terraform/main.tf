@@ -31,9 +31,10 @@ resource "proxmox_virtual_environment_vm" "cloudinit-k3s-master" {
   }
 
   initialization {
+    hostname = "k3s-master-0${count.index + 1}"
     user_account {
-      username = "ubuntu"
-      keys     = [file("~/src/.ssh/pvm-ubuntu-cloud.pub")]
+      username = "ansibleuser"
+      keys     = [file("~/.ssh/pvm-ubuntu-cloud.pub")]
     }
     
     ip_config {
@@ -76,9 +77,10 @@ resource "proxmox_virtual_environment_vm" "cloudinit-k3s-worker" {
   }
 
   initialization {
+    hostname = "k3s-worker-0${count.index + 1}"
     user_account {
-      username = "ubuntu"
-      keys     = [file("~/src/.ssh/pvm-ubuntu-cloud.pub")]
+      username = "ansibleuser"
+      keys     = [file("~/.ssh/pvm-ubuntu-cloud.pub")]
     }
     
     ip_config {

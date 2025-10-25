@@ -30,13 +30,48 @@ This repository contains the infrastructure as code, application deployments, an
 ## K3s Ansible
 This is based on https://github.com/techno-tim/k3s-ansible
 
+### Deploying the k3s cluster
 - `./install_ansible.sh`
-- Follow the guide to deploy the k3s cluster
-- `scp -i ~/src/.ssh/pvm-ubuntu-cloud ubuntu@192.168.68.201:~/.kube/config ~/.kube/config`
-- Then may need to install kubectl commands on the dev machine
-- `echo 'alias k="kubectl"' >> ~/.bashrc`
-- `source ~/.bashrc`
-- The k3s cluster is then ready to use
+- Follow the guide to deploy the k3s cluster (TODO: write directly here)
+
+### Connecting to k3s cluster from a new dev machine
+
+#### 1. Install kubectl
+```bash
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+```
+
+#### 2. Install ansible (for kubeconfig retrieval)
+```bash
+sudo apt update && sudo apt install -y ansible-core
+```
+
+#### 3. Get kubeconfig from k3s cluster
+```bash
+mkdir -p ~/.kube
+
+scp -i ~/.ssh/pvm-ubuntu-cloud ansibleuser@192.168.68.201:~/.kube/config ~/.kube/config
+
+# If needed, fix the server endpoint (change from 127.0.0.1:6443 to cluster IP)
+sed -i 's|server: https://127.0.0.1:6443|server: https://192.168.68.240:6443|' ~/.kube/config
+```
+
+#### 4. Verify connection
+```bash
+kubectl get nodes
+kubectl get pods --all-namespaces
+```
+
+#### 5. Optional: Add kubectl alias
+```bash
+echo 'alias k="kubectl"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Important Notes:**
+- Make sure you have the SSH key `~/.ssh/pvm-ubuntu-cloud` available
 
 ## NFS CSI Setup
 
