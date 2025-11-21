@@ -24,6 +24,7 @@ kubeconfig
 *.pfx
 secrets/
 secrets.yaml
+secret.yaml
 *.secret
 .env
 .env.local
