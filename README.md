@@ -209,6 +209,98 @@ helm -n immich upgrade immich immich/immich -f immich/values.yaml
    kubectl delete namespace immich
    ```
 
+## Cloudflare Tunnel Setup for Immich
+
+This section contains Kubernetes manifests to deploy Cloudflare Tunnel (cloudflared) to expose your Immich application via a custom domain.
+
+### Prerequisites
+
+- Kubernetes cluster with kubectl access
+- Cloudflare account (free tier works)
+- Domain `yourdomain.com` purchased from Cloudflare
+- Immich deployed and running in the `immich` namespace
+
+### Step-by-Step Setup Guide
+
+#### Step 1: Create Cloudflare Account
+
+1. Go to [https://dash.cloudflare.com/sign-up](https://dash.cloudflare.com/sign-up)
+2. Sign up for a free Cloudflare account
+3. Verify your email address
+
+#### Step 2: Verify Domain in Cloudflare
+
+Since your domain is purchased from Cloudflare, it should already be configured in your Cloudflare account. Verify the setup:
+
+1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Ensure `yourdomain.com` is listed in your domains
+3. Verify the domain is active and using Cloudflare nameservers (this is automatic for Cloudflare-purchased domains)
+4. The `immich.yourdomain.com` subdomain will be automatically created when you configure the Cloudflare Tunnel in Step 4
+
+#### Step 3: Set Up Cloudflare Zero Trust (Tunnels)
+
+1. In Cloudflare Dashboard, go to **Zero Trust** (or visit [https://one.dash.cloudflare.com](https://one.dash.cloudflare.com))
+2. If prompted, select the **Free** plan for Zero Trust
+3. Navigate to **Networks** → **Tunnels**
+4. Click **Create a tunnel**
+5. Select **Cloudflared** as the connector type
+6. Give your tunnel a name (e.g., `immich-tunnel`)
+7. Click **Save tunnel**
+
+#### Step 4: Configure the Tunnel
+
+1. After creating the tunnel, chose a `Token` for `Docker` - **COPY THIS TOKEN** (you'll need it in the next step)
+2. Click **Next**
+3. In the `Connectors`:
+   - **Subdomain**: `immich`
+   - **Domain**: `yourdomain.com`
+   - **Type**: `HTTP`
+   - **URL**: `immich-server.immich.svc.cluster.local:2283`
+4. Click **Complete setup**
+
+#### Step 5: Deploy Cloudflare Tunnel to Kubernetes
+
+1. Create the namespace:
+   ```bash
+   kubectl apply -f cloudflare/namespace.yaml
+   ```
+
+2. Create the secret with your tunnel token:
+   ```bash
+   # Copy the template
+   cp cloudflare/secret.yaml.template cloudflare/secret.yaml
+   
+   # Edit the secret file and replace CHANGE_ME_TUNNEL_TOKEN with the token from Step 4
+   nano cloudflare/secret.yaml
+   ```
+
+3. Apply the secret:
+   ```bash
+   kubectl apply -f cloudflare/secret.yaml
+   ```
+
+4. Deploy the tunnel:
+   ```bash
+   kubectl apply -f cloudflare/deployment.yaml
+   ```
+
+5. Verify the deployment:
+   ```bash
+   kubectl -n cloudflare-tunnel get pods
+   kubectl -n cloudflare-tunnel logs -f deployment/cloudflared
+   ```
+
+#### Step 6: Verify the Setup
+
+1. Wait a few minutes for DNS propagation (usually instant for Cloudflare domains)
+2. Check DNS resolution:
+   ```bash
+   dig immich.yourdomain.com
+   nslookup immich.yourdomain.com
+   ```
+3. Visit `https://immich.yourdomain.com/` in your browser
+4. You should see your Immich login page
+
 ## Contributing
 
 This is a personal homelab project. For issues and improvements, please create GitHub issues.
