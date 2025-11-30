@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: immich-server
+  name: ${INSTANCE_NAME}-server
 spec:
   template:
     spec:
@@ -13,4 +13,4 @@ spec:
       volumes:
         - name: photos
           persistentVolumeClaim:
-            claimName: immich-photos-pvc
+            claimName: ${INSTANCE_NAME}-photos-pvc

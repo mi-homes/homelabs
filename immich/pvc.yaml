@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: immich-photos-pv
+  name: ${INSTANCE_NAME}-photos-pv
   labels:
     app: immich
     component: photos-storage
@@ -14,17 +14,17 @@ spec:
   storageClassName: nfs-csi
   csi:
     driver: nfs.csi.k8s.io
-    volumeHandle: immich-photos-pv
+    volumeHandle: ${INSTANCE_NAME}-photos-pv
     volumeAttributes:
-      server: "CHANGE_ME_NFS_SERVER_IP"
-      share: "/volume2/immich/photos"
+      server: "${NFS_SERVER_IP}"
+      share: "${NFS_BASE_PATH}/photos"
       mountOptions: "nolock,nfsvers=3"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: immich-photos-pvc
-  namespace: immich
+  name: ${INSTANCE_NAME}-photos-pvc
+  namespace: ${NAMESPACE}
   labels:
     app: immich
     component: photos-storage
@@ -35,12 +35,12 @@ spec:
   resources:
     requests:
       storage: 1Ti
-  volumeName: immich-photos-pv
+  volumeName: ${INSTANCE_NAME}-photos-pv
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: immich-redis-pv
+  name: ${INSTANCE_NAME}-redis-pv
   labels:
     app: immich
     component: redis-storage
@@ -53,17 +53,17 @@ spec:
   storageClassName: nfs-csi
   csi:
     driver: nfs.csi.k8s.io
-    volumeHandle: immich-redis-pv
+    volumeHandle: ${INSTANCE_NAME}-redis-pv
     volumeAttributes:
-      server: "CHANGE_ME_NFS_SERVER_IP"
-      share: "/volume2/immich/redis"
+      server: "${NFS_SERVER_IP}"
+      share: "${NFS_BASE_PATH}/redis"
       mountOptions: "nolock,nfsvers=3"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: immich-redis-pvc
-  namespace: immich
+  name: ${INSTANCE_NAME}-redis-pvc
+  namespace: ${NAMESPACE}
   labels:
     app: immich
     component: redis-storage
@@ -74,13 +74,13 @@ spec:
   resources:
     requests:
       storage: 15Gi
-  volumeName: immich-redis-pv
+  volumeName: ${INSTANCE_NAME}-redis-pv
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: immich-postgresql-pvc
-  namespace: immich
+  name: ${INSTANCE_NAME}-postgresql-pvc
+  namespace: ${NAMESPACE}
   labels:
     app: immich
     component: postgresql-storage
@@ -95,7 +95,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: immich-ml-cache-pv
+  name: ${INSTANCE_NAME}-ml-cache-pv
   labels:
     app: immich
     component: ml-cache-storage
@@ -108,17 +108,17 @@ spec:
   storageClassName: nfs-csi
   csi:
     driver: nfs.csi.k8s.io
-    volumeHandle: immich-ml-cache-pv
+    volumeHandle: ${INSTANCE_NAME}-ml-cache-pv
     volumeAttributes:
-      server: "CHANGE_ME_NFS_SERVER_IP"
-      share: "/volume2/immich/ml-cache"
+      server: "${NFS_SERVER_IP}"
+      share: "${NFS_BASE_PATH}/ml-cache"
       mountOptions: "nolock,nfsvers=3"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: immich-ml-cache-pvc
-  namespace: immich
+  name: ${INSTANCE_NAME}-ml-cache-pvc
+  namespace: ${NAMESPACE}
   labels:
     app: immich
     component: ml-cache-storage
@@ -129,12 +129,12 @@ spec:
   resources:
     requests:
       storage: 25Gi
-  volumeName: immich-ml-cache-pv
+  volumeName: ${INSTANCE_NAME}-ml-cache-pv
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: immich-library-pv
+  name: ${INSTANCE_NAME}-library-pv
   labels:
     app: immich
     component: library-storage
@@ -147,17 +147,17 @@ spec:
   storageClassName: nfs-csi
   csi:
     driver: nfs.csi.k8s.io
-    volumeHandle: immich-library-pv
+    volumeHandle: ${INSTANCE_NAME}-library-pv
     volumeAttributes:
-      server: "CHANGE_ME_NFS_SERVER_IP"
-      share: "/volume2/immich/library"
+      server: "${NFS_SERVER_IP}"
+      share: "${NFS_BASE_PATH}/library"
       mountOptions: "nolock,nfsvers=3"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: immich-library-pvc
-  namespace: immich
+  name: ${INSTANCE_NAME}-library-pvc
+  namespace: ${NAMESPACE}
   labels:
     app: immich
     component: library-storage
@@ -168,4 +168,4 @@ spec:
   resources:
     requests:
       storage: 1Ti
-  volumeName: immich-library-pv
+  volumeName: ${INSTANCE_NAME}-library-pv

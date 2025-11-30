@@ -109,7 +109,7 @@ Configure the following values in the deployment files:
 
 ## Immich Setup
 
-Immich is a self-hosted photo and video backup solution. This directory contains the Kubernetes configuration files for deploying Immich.
+Immich is a self-hosted photo and video backup solution. This directory contains a reusable template-based deployment for Immich that allows easy deployment of multiple instances with different namespaces, domains, and NFS paths.
 
 ### Prerequisites
 
@@ -118,95 +118,95 @@ Immich is a self-hosted photo and video backup solution. This directory contains
 - NFS server accessible from the cluster
 - Domain name for ingress (optional)
 
-### Configuration
+#### Configuration Variables
 
-#### 1. Configure Secrets
+**Required Variables:**
 
-Before deploying, you need to create the secrets file with your actual values:
+- `INSTANCE_NAME`: Unique identifier for this instance
+- `NAMESPACE`: Kubernetes namespace
+- `DOMAIN_NAME`: Domain name for ingress
+- `NFS_SERVER_IP`: IP address of the NFS server
+- `NFS_BASE_PATH`: Base path on NFS server
+- `DB_NAME`: PostgreSQL database name (typically `immich`)
+- `DB_PASSWORD`: PostgreSQL database password
+- `JWT_SECRET`: JWT secret for authentication
 
-```bash
-# Copy the template
-cp immich/secrets.yaml.template immich/secrets.yaml
+#### Deploying a New Instance
 
-# Edit the secrets file with your actual values
-nano immich/secrets.yaml
-```
+1. **Create NFS directories on the NAS first:**
+   
+   Before deploying, you must create the required directories on your NFS server. The PVCs will mount these directories, but they must exist beforehand.
+   
+   On your NAS, create the following directories under `${NFS_BASE_PATH}`:
+   - `library/` - User library storage
+   - `ml-cache/` - Machine learning model cache
+   - `photos/` - Photo storage (read-only mount)
+   - `redis/` - Redis data
+   
+   **Note:** The `postgres/` directory is not needed as PostgreSQL currently uses local-path storage, not NFS.
 
-Replace the following placeholder values in `secrets.yaml`:
-
-- `CHANGE_ME_DB_PASSWORD`: Strong password for PostgreSQL database
-- `CHANGE_ME_JWT_SECRET`: Secure random key for JWT authentication (generate with `openssl rand -base64 32`)
-
-#### 2. Update Configuration Files
-
-Update the following files with your actual values:
-
-- `immich/values.yaml`: Replace `CHANGE_ME_DOMAIN_NAME` with your domain name (e.g., `immich.example.com`)
-- `immich/pvc.yaml`: Replace `CHANGE_ME_NFS_SERVER_IP` with your NFS server IP
-
-### Installation Steps
-
-1. Create Immich namespace:
+2. Create instance configuration directory:
    ```bash
-   kubectl create namespace immich
+   mkdir -p immich/instances/<instance-name>
    ```
 
-2. Apply secrets:
+3. Create `immich/instances/<instance-name>/instance.env` with the following variables:
    ```bash
-   kubectl apply -f immich/secrets.yaml
+   INSTANCE_NAME=<instance-name>
+   NAMESPACE=immich-<instance-name>
+   DOMAIN_NAME=<your-domain>
+   NFS_SERVER_IP=<nfs-server-ip>
+   NFS_BASE_PATH=/volume2/immich/<nfs-path>
+   DB_NAME=immich
+   DB_PASSWORD=<strong-password-or-empty>
+   JWT_SECRET=<jwt-secret-or-empty>
    ```
 
-3. Apply NFS PVCs:
+4. Deploy the instance:
    ```bash
-   kubectl apply -f immich/pvc.yaml
+   cd immich
+   ./deploy-instance.sh <instance-name>
    ```
 
-4. Deploy PostgreSQL:
-   ```bash
-   kubectl apply -f immich/postgres.yaml
-   ```
-
-5. Deploy Immich using Helm:
-   ```bash
-   helm repo add immich https://immich-app.github.io/immich-helm
-   helm repo update
-   helm -n immich install immich immich/immich -f immich/values.yaml
-   ```
-
-6. Apply the strategic merge patch for additional volumes:
-   ```bash
-   kubectl -n immich patch deployment immich-server --patch-file immich/patch.yaml
-   ```
+   The script will:
+   - Load configuration from `instances/<instance-name>/instance.env`
+   - Validate required variables
+   - Generate secrets if not provided
+   - Generate instance-specific manifests from templates using `envsubst`
+   - Create Kubernetes namespace
+   - Apply secrets
+   - Apply PVCs
+   - Deploy PostgreSQL
+   - Wait for PostgreSQL to be ready
+   - Deploy Immich via Helm
+   - Apply volume patch
 
 ### Upgrading
 
-To upgrade Immich:
+To upgrade an Immich instance:
 
 ```bash
-# Update Helm repository
-helm repo update
-
-# Upgrade the release
-helm -n immich upgrade immich immich/immich -f immich/values.yaml
-```
+cd immich
+# Regenerate manifests and upgrade
+./deploy-instance.sh <instance-name>
 
 ### Removal Steps
 
 1. Uninstall Helm release:
    ```bash
-   helm -n immich uninstall immich
+   helm -n <namespace> uninstall <instance-name>
    ```
 
 2. Remove PVCs:
    ```bash
-   kubectl -n immich delete pvc --all
+   kubectl -n <namespace> delete pvc --all
    ```
 
 3. Delete released PVs if needed
 
 4. (Optional) Remove namespace:
    ```bash
-   kubectl delete namespace immich
+   kubectl delete namespace <namespace>
    ```
 
 ## Cloudflare Tunnel Setup for Immich

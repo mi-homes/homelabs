@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: immich-postgresql
-  namespace: immich
+  name: ${INSTANCE_NAME}-postgresql
+  namespace: ${NAMESPACE}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: immich-postgresql
+      app: ${INSTANCE_NAME}-postgresql
   template:
     metadata:
       labels:
-        app: immich-postgresql
+        app: ${INSTANCE_NAME}-postgresql
     spec:
       securityContext:
         fsGroup: 999
@@ -36,17 +36,17 @@ spec:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: immich-db-secret
+              name: ${INSTANCE_NAME}-db-secret
               key: password
         - name: POSTGRES_USER
           valueFrom:
             secretKeyRef:
-              name: immich-db-secret
+              name: ${INSTANCE_NAME}-db-secret
               key: username
         - name: POSTGRES_DB
           valueFrom:
             secretKeyRef:
-              name: immich-db-secret
+              name: ${INSTANCE_NAME}-db-secret
               key: database
         ports:
         - containerPort: 5432
@@ -66,7 +66,7 @@ spec:
           exec:
             command:
             - pg_isready
-            - --dbname=immich
+            - --dbname=${DB_NAME}
             - --username=postgres
           initialDelaySeconds: 30
           periodSeconds: 10
@@ -76,7 +76,7 @@ spec:
           exec:
             command:
             - pg_isready
-            - --dbname=immich
+            - --dbname=${DB_NAME}
             - --username=postgres
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -85,16 +85,16 @@ spec:
       volumes:
       - name: postgresql-data
         persistentVolumeClaim:
-          claimName: immich-postgresql-pvc
+          claimName: ${INSTANCE_NAME}-postgresql-pvc
       - name: init-script
         configMap:
-          name: postgresql-init
+          name: ${INSTANCE_NAME}-postgresql-init
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: postgresql-init
-  namespace: immich
+  name: ${INSTANCE_NAME}-postgresql-init
+  namespace: ${NAMESPACE}
 data:
   init.sql: |
     CREATE EXTENSION IF NOT EXISTS cube;
@@ -111,11 +111,11 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: immich-postgresql
-  namespace: immich
+  name: ${INSTANCE_NAME}-postgresql
+  namespace: ${NAMESPACE}
 spec:
   selector:
-    app: immich-postgresql
+    app: ${INSTANCE_NAME}-postgresql
   ports:
   - port: 5432
     targetPort: 5432

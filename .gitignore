@@ -30,6 +30,7 @@ secret.yaml
 .env.local
 .env.*.local
 .env.production
+instance.env
 
 # Logs
 *.log
@@ -95,3 +96,9 @@ override/
 # Helm charts
 charts/
 Chart.lock
+
+# Immich instance-specific generated files
+immich/instances/*/pvc.yaml
+immich/instances/*/postgres.yaml
+immich/instances/*/patch.yaml
+immich/instances/*/values.yaml
