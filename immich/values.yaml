@@ -25,7 +25,7 @@ envFrom:
       name: ${INSTANCE_NAME}-app-secret
 
 image:
-  tag: v2.1.0
+  tag: ${IMMICH_VERSION}
 
 immich:
   metrics:

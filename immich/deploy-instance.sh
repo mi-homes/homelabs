@@ -53,17 +53,23 @@ if [ -z "${DB_PASSWORD:-}" ] || [ -z "${JWT_SECRET:-}" ]; then
     read -p "Press Enter to continue or Ctrl+C to abort..."
 fi
 
+if [ -z "${IMMICH_VERSION:-}" ]; then
+    IMMICH_VERSION="v2.1.0"
+    echo "Using default Immich version: $IMMICH_VERSION"
+fi
+
 echo "Deploying Immich instance: $INSTANCE_NAME"
 echo "  Namespace: $NAMESPACE"
 echo "  Domain: $DOMAIN_NAME"
 echo "  NFS Server: $NFS_SERVER_IP"
 echo "  NFS Base Path: $NFS_BASE_PATH"
+echo "  Immich Version: $IMMICH_VERSION"
 echo ""
 
 mkdir -p "$INSTANCE_DIR"
 
 echo "Generating manifests from templates..."
-export INSTANCE_NAME NAMESPACE DOMAIN_NAME NFS_SERVER_IP NFS_BASE_PATH DB_NAME DB_PASSWORD JWT_SECRET
+export INSTANCE_NAME NAMESPACE DOMAIN_NAME NFS_SERVER_IP NFS_BASE_PATH DB_NAME DB_PASSWORD JWT_SECRET IMMICH_VERSION
 
 envsubst < "$SCRIPT_DIR/pvc.yaml" > "$INSTANCE_DIR/pvc.yaml"
 envsubst < "$SCRIPT_DIR/postgres.yaml" > "$INSTANCE_DIR/postgres.yaml"
