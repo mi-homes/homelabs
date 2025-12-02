@@ -18,7 +18,7 @@ spec:
     volumeAttributes:
       server: "${NFS_SERVER_IP}"
       share: "${NFS_BASE_PATH}/photos"
-      mountOptions: "nolock,nfsvers=3"
+      mountOptions: "nolock,nfsvers=3,ro"
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

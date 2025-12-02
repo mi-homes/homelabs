@@ -10,6 +10,7 @@ spec:
           volumeMounts:
             - name: photos
               mountPath: /mnt/photos
+              readOnly: true
       volumes:
         - name: photos
           persistentVolumeClaim:

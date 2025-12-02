@@ -97,7 +97,7 @@ helm upgrade --install "$INSTANCE_NAME" immich/immich \
     --wait
 
 echo "Applying patch for additional volumes..."
-kubectl -n "$NAMESPACE" patch deployment "${INSTANCE_NAME}-server" --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts/-", "value": {"name": "photos", "mountPath": "/mnt/photos"}}, {"op": "add", "path": "/spec/template/spec/volumes/-", "value": {"name": "photos", "persistentVolumeClaim": {"claimName": "'"${INSTANCE_NAME}"'-photos-pvc"}}}]' || {
+kubectl -n "$NAMESPACE" patch deployment "${INSTANCE_NAME}-server" --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts/-", "value": {"name": "photos", "mountPath": "/mnt/photos", "readOnly": true}}, {"op": "add", "path": "/spec/template/spec/volumes/-", "value": {"name": "photos", "persistentVolumeClaim": {"claimName": "'"${INSTANCE_NAME}"'-photos-pvc"}}}]' || {
     echo "Warning: Patch may have failed. Check deployment name:"
     kubectl -n "$NAMESPACE" get deployments | grep server
 }
