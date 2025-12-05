@@ -104,9 +104,43 @@ helm upgrade --install "$INSTANCE_NAME" oci://ghcr.io/immich-app/immich-charts/i
     -n "$NAMESPACE" \
     -f "$INSTANCE_DIR/values.yaml" \
     --wait --timeout 5m || {
+    HELM_ERROR=$?
     echo ""
-    echo "Warning: Helm deployment timed out or encountered an error."
-    echo "The resources may have been created but are not ready yet."
+    echo "Warning: Helm deployment encountered an error (exit code: $HELM_ERROR)."
+    echo ""
+    
+    if helm status "$INSTANCE_NAME" -n "$NAMESPACE" &>/dev/null; then
+        echo "Checking for immutable field errors..."
+        if kubectl get deployment "${INSTANCE_NAME}-server" -n "$NAMESPACE" &>/dev/null && \
+           kubectl get deployment "${INSTANCE_NAME}-machine-learning" -n "$NAMESPACE" &>/dev/null; then
+            echo ""
+            echo "Detected immutable selector label conflicts."
+            echo "This happens when upgrading from an older Helm chart version."
+            echo ""
+            echo "To fix this, you need to delete the deployments and let Helm recreate them:"
+            echo "  kubectl delete deployment ${INSTANCE_NAME}-server ${INSTANCE_NAME}-machine-learning -n $NAMESPACE"
+            echo "  Then run this script again: ./deploy-instance.sh $INSTANCE_NAME"
+            echo ""
+            read -p "Would you like to delete and recreate the deployments now? (y/N) " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                echo "Deleting deployments..."
+                kubectl delete deployment "${INSTANCE_NAME}-server" "${INSTANCE_NAME}-machine-learning" -n "$NAMESPACE" --wait=false
+                echo "Waiting for pods to terminate..."
+                sleep 5
+                echo "Retrying Helm upgrade..."
+                helm upgrade --install "$INSTANCE_NAME" oci://ghcr.io/immich-app/immich-charts/immich \
+                    -n "$NAMESPACE" \
+                    -f "$INSTANCE_DIR/values.yaml" \
+                    --wait --timeout 5m || {
+                    echo "Helm upgrade still failed. Please check the error above."
+                }
+            else
+                echo "Skipping deployment recreation. Please fix manually and rerun the script."
+            fi
+        fi
+    fi
+    
     echo ""
     echo "Checking deployment status..."
     helm status "$INSTANCE_NAME" -n "$NAMESPACE" 2>/dev/null || echo "Helm release status unavailable"
@@ -123,10 +157,64 @@ helm upgrade --install "$INSTANCE_NAME" oci://ghcr.io/immich-app/immich-charts/i
 }
 
 echo "Applying patch for additional volumes..."
-kubectl -n "$NAMESPACE" patch deployment "${INSTANCE_NAME}-server" --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts/-", "value": {"name": "photos", "mountPath": "/mnt/photos"}}, {"op": "add", "path": "/spec/template/spec/volumes/-", "value": {"name": "photos", "persistentVolumeClaim": {"claimName": "'"${INSTANCE_NAME}"'-photos-pvc"}}}]' || {
-    echo "Warning: Patch may have failed. Check deployment name:"
-    kubectl -n "$NAMESPACE" get deployments | grep server
-}
+if kubectl get deployment "${INSTANCE_NAME}-server" -n "$NAMESPACE" &>/dev/null; then
+    EXISTING_VOLUME=$(kubectl get deployment "${INSTANCE_NAME}-server" -n "$NAMESPACE" -o jsonpath='{.spec.template.spec.volumes[*].name}' | grep -q "photos" && echo "yes" || echo "no")
+    
+    if [ "$EXISTING_VOLUME" = "yes" ]; then
+        echo "Photos volume already exists, skipping patch."
+    else
+        if command -v yq &> /dev/null; then
+            VOLUME_MOUNT=$(yq eval '.spec.template.spec.containers[0].volumeMounts[0]' "$INSTANCE_DIR/patch.yaml" -o json)
+            VOLUME=$(yq eval '.spec.template.spec.volumes[0]' "$INSTANCE_DIR/patch.yaml" -o json)
+            PATCH_JSON=$(cat <<EOF
+[
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/volumeMounts/-",
+    "value": $VOLUME_MOUNT
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/volumes/-",
+    "value": $VOLUME
+  }
+]
+EOF
+)
+        else
+            PATCH_JSON=$(cat <<EOF
+[
+  {
+    "op": "add",
+    "path": "/spec/template/spec/containers/0/volumeMounts/-",
+    "value": {
+      "name": "photos",
+      "mountPath": "/mnt/photos",
+      "readOnly": true
+    }
+  },
+  {
+    "op": "add",
+    "path": "/spec/template/spec/volumes/-",
+    "value": {
+      "name": "photos",
+      "persistentVolumeClaim": {
+        "claimName": "${INSTANCE_NAME}-photos-pvc"
+      }
+    }
+  }
+]
+EOF
+)
+        fi
+        kubectl -n "$NAMESPACE" patch deployment "${INSTANCE_NAME}-server" --type='json' -p="$PATCH_JSON" || {
+            echo "Warning: Patch failed. Check deployment name:"
+            kubectl -n "$NAMESPACE" get deployments | grep server
+        }
+    fi
+else
+    echo "Warning: Deployment ${INSTANCE_NAME}-server not found. Skipping volume patch."
+fi
 
 echo ""
 echo "Deployment complete!"
