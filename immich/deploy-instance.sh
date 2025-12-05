@@ -73,6 +73,7 @@ export INSTANCE_NAME NAMESPACE DOMAIN_NAME NFS_SERVER_IP NFS_BASE_PATH DB_NAME D
 
 envsubst < "$SCRIPT_DIR/pvc.yaml" > "$INSTANCE_DIR/pvc.yaml"
 envsubst < "$SCRIPT_DIR/postgres.yaml" > "$INSTANCE_DIR/postgres.yaml"
+envsubst < "$SCRIPT_DIR/redis.yaml" > "$INSTANCE_DIR/redis.yaml"
 envsubst < "$SCRIPT_DIR/patch.yaml" > "$INSTANCE_DIR/patch.yaml"
 envsubst < "$SCRIPT_DIR/secrets.yaml.template" > "$INSTANCE_DIR/secrets.yaml"
 envsubst < "$SCRIPT_DIR/values.yaml" > "$INSTANCE_DIR/values.yaml"
@@ -92,15 +93,34 @@ kubectl apply -f "$INSTANCE_DIR/postgres.yaml"
 echo "Waiting for PostgreSQL to be ready..."
 kubectl wait --for=condition=available --timeout=300s deployment/${INSTANCE_NAME}-postgresql -n "$NAMESPACE" || true
 
-echo "Adding Helm repository..."
-helm repo add immich https://immich-app.github.io/immich-charts || true
-helm repo update
+echo "Deploying Redis..."
+kubectl apply -f "$INSTANCE_DIR/redis.yaml"
+
+echo "Waiting for Redis to be ready..."
+kubectl wait --for=condition=available --timeout=300s deployment/${INSTANCE_NAME}-redis -n "$NAMESPACE" || true
 
 echo "Deploying Immich using Helm..."
-helm upgrade --install "$INSTANCE_NAME" immich/immich \
+helm upgrade --install "$INSTANCE_NAME" oci://ghcr.io/immich-app/immich-charts/immich \
     -n "$NAMESPACE" \
     -f "$INSTANCE_DIR/values.yaml" \
-    --wait
+    --wait --timeout 5m || {
+    echo ""
+    echo "Warning: Helm deployment timed out or encountered an error."
+    echo "The resources may have been created but are not ready yet."
+    echo ""
+    echo "Checking deployment status..."
+    helm status "$INSTANCE_NAME" -n "$NAMESPACE" 2>/dev/null || echo "Helm release status unavailable"
+    echo ""
+    echo "Current pod status:"
+    kubectl -n "$NAMESPACE" get pods 2>/dev/null || echo "Unable to get pod status"
+    echo ""
+    echo "The deployment may still be in progress. You can:"
+    echo "  1. Check pod status: kubectl -n $NAMESPACE get pods"
+    echo "  2. Check server logs: kubectl -n $NAMESPACE logs -l app.kubernetes.io/name=immich,app.kubernetes.io/component=server"
+    echo "  3. Wait and check again, or manually verify the deployment"
+    echo ""
+    echo "Continuing with post-deployment steps..."
+}
 
 echo "Applying patch for additional volumes..."
 kubectl -n "$NAMESPACE" patch deployment "${INSTANCE_NAME}-server" --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts/-", "value": {"name": "photos", "mountPath": "/mnt/photos"}}, {"op": "add", "path": "/spec/template/spec/volumes/-", "value": {"name": "photos", "persistentVolumeClaim": {"claimName": "'"${INSTANCE_NAME}"'-photos-pvc"}}}]' || {

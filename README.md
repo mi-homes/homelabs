@@ -154,7 +154,7 @@ Immich is a self-hosted photo and video backup solution. This directory contains
    ```bash
    INSTANCE_NAME=<instance-name>
    NAMESPACE=immich-<instance-name>
-   DOMAIN_NAME=<your-domain>
+   DOMAIN_NAME=<your-domain> # This is for traefik, currently not used
    NFS_SERVER_IP=<nfs-server-ip>
    NFS_BASE_PATH=/volume2/immich/<nfs-path>
    DB_NAME=immich
@@ -163,6 +163,7 @@ Immich is a self-hosted photo and video backup solution. This directory contains
    ```
 
 4. Deploy the instance:
+
    ```bash
    cd immich
    ./deploy-instance.sh <instance-name>
@@ -187,27 +188,7 @@ To upgrade an Immich instance:
 
 ```bash
 cd immich
-# Regenerate manifests and upgrade
 ./deploy-instance.sh <instance-name>
-
-### Removal Steps
-
-1. Uninstall Helm release:
-   ```bash
-   helm -n <namespace> uninstall <instance-name>
-   ```
-
-2. Remove PVCs:
-   ```bash
-   kubectl -n <namespace> delete pvc --all
-   ```
-
-3. Delete released PVs if needed
-
-4. (Optional) Remove namespace:
-   ```bash
-   kubectl delete namespace <namespace>
-   ```
 
 ## Cloudflare Tunnel Setup for Immich
 

@@ -101,4 +101,5 @@ Chart.lock
 immich/instances/*/pvc.yaml
 immich/instances/*/postgres.yaml
 immich/instances/*/patch.yaml
+immich/instances/*/redis.yaml
 immich/instances/*/values.yaml
