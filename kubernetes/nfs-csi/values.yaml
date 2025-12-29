@@ -1,0 +1,74 @@
+# NFS CSI Driver Helm Values
+# Based on the official csi-driver-nfs chart
+
+global:
+  k3s: true
+
+controller:
+  replicas: 1
+
+  serviceAccount:
+    create: true
+    name: "csi-driver-nfs-controller"
+    annotations: {}
+
+  deployment:
+    kubeletDir: "/var/lib/rancher/k3s/agent/containerd/io.containerd.grpc.v1.cri/sandboxes"
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+node:
+  serviceAccount:
+    create: true
+    name: "csi-driver-nfs-node"
+    annotations: {}
+  
+  daemonSet:
+    kubeletDir: "/var/lib/rancher/k3s/agent/containerd/io.containerd.grpc.v1.cri/sandboxes"
+    
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+rbac:
+  create: true
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+service:
+  controller:
+    type: ClusterIP
+  node:
+    type: ClusterIP
+
+storageClass:
+  create: true
+  name: "nfs-csi"
+  isDefault: false
+  reclaimPolicy: Retain
+  volumeBindingMode: Immediate
+  allowVolumeExpansion: true
+  mountOptions:
+    - nfsvers=4.1
+    - nolock
+    - nfsvers=4.0
+    - nolock
+    - nfsvers=3
+    - nolock

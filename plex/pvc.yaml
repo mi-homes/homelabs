@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: plex-media-pv
+  labels:
+    app: plex-k3s
+    component: media-storage
+spec:
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-csi
+  csi:
+    driver: nfs.csi.k8s.io
+    volumeHandle: plex-media-pv
+    volumeAttributes:
+      server: "YOUR_SYNOLOGY_NAS_IP"
+      share: "YOUR_SYNOLOGY_NAS_SHARE"
+      mountOptions: "nolock,nfsvers=3"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-media-pvc
+  namespace: plex
+  labels:
+    app: plex-k3s
+    component: media-storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-csi
+  resources:
+    requests:
+      storage: 1Ti
+  volumeName: plex-media-pv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: plex-config-pvc
+  namespace: plex
+  labels:
+    app: plex-k3s
+    component: config-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 20Gi

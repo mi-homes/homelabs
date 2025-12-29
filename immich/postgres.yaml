@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${INSTANCE_NAME}-postgresql
+  namespace: ${NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${INSTANCE_NAME}-postgresql
+  template:
+    metadata:
+      labels:
+        app: ${INSTANCE_NAME}-postgresql
+    spec:
+      securityContext:
+        fsGroup: 999
+      initContainers:
+      - name: init-postgresql-data
+        image: busybox:1.35
+        command: ['sh', '-c', 'chown -R 999:999 /var/lib/postgresql/data && chmod -R 700 /var/lib/postgresql/data']
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+      containers:
+      - name: postgresql
+        image: tensorchord/pgvecto-rs:pg14-v0.2.0@sha256:739cdd626151ff1f796dc95a6591b55a714f341c737e27f045019ceabf8e8c52
+        securityContext:
+          runAsUser: 999
+          runAsGroup: 999
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ${INSTANCE_NAME}-db-secret
+              key: password
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: ${INSTANCE_NAME}-db-secret
+              key: username
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: ${INSTANCE_NAME}-db-secret
+              key: database
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - --dbname=${DB_NAME}
+            - --username=postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - --dbname=${DB_NAME}
+            - --username=postgres
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: postgresql-data
+        persistentVolumeClaim:
+          claimName: ${INSTANCE_NAME}-postgresql-pvc
+      - name: init-script
+        configMap:
+          name: ${INSTANCE_NAME}-postgresql-init
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${INSTANCE_NAME}-postgresql-init
+  namespace: ${NAMESPACE}
+data:
+  init.sql: |
+    CREATE EXTENSION IF NOT EXISTS cube;
+    CREATE EXTENSION IF NOT EXISTS earthdistance;
+    CREATE EXTENSION IF NOT EXISTS vectors;
+    
+    -- Add health check function
+    CREATE OR REPLACE FUNCTION check_checksum_failures() RETURNS integer AS $$
+    BEGIN
+      RETURN COALESCE(SUM(checksum_failures), 0) FROM pg_stat_database;
+    END;
+    $$ LANGUAGE plpgsql;
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${INSTANCE_NAME}-postgresql
+  namespace: ${NAMESPACE}
+spec:
+  selector:
+    app: ${INSTANCE_NAME}-postgresql
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+

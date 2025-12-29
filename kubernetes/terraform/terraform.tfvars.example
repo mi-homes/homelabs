@@ -1,0 +1,5 @@
+# Proxmox provider configuration
+# Copy this file to terraform.tfvars and update with your actual values
+proxmox_endpoint = "https://your-proxmox-host:8006"
+proxmox_username = "your-username@pam"
+proxmox_password = "your-password"

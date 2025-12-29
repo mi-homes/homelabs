@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${INSTANCE_NAME}-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: immich-server
+          volumeMounts:
+            - name: photos
+              mountPath: /mnt/photos
+      volumes:
+        - name: photos
+          persistentVolumeClaim:
+            claimName: ${INSTANCE_NAME}-photos-pvc

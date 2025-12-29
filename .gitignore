@@ -3,6 +3,7 @@
 *.tfstate.*
 .terraform/
 .terraform.lock.hcl
+terraform.tfvars
 
 # Ansible
 *.retry
@@ -22,9 +23,14 @@ kubeconfig
 *.p12
 *.pfx
 secrets/
+secrets.yaml
+secret.yaml
+*.secret
 .env
 .env.local
 .env.*.local
+.env.production
+instance.env
 
 # Logs
 *.log
@@ -81,7 +87,18 @@ wheels/
 *.bak
 *.backup
 *.old
+*.orig
 
 # Local configuration overrides
 local/
 override/
+
+# Helm charts
+charts/
+Chart.lock
+
+# Immich instance-specific generated files
+immich/instances/*/pvc.yaml
+immich/instances/*/postgres.yaml
+immich/instances/*/patch.yaml
+immich/instances/*/values.yaml
