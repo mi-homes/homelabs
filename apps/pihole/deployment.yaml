@@ -29,7 +29,7 @@ spec:
               protocol: UDP
           env:
             - name: TZ
-              value: UTC
+              value: Europe/Amsterdam
             - name: WEBPASSWORD
               valueFrom:
                 secretKeyRef:
