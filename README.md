@@ -1,21 +1,21 @@
 # Kubernetes Homelabs
 
-Personal homelab infrastructure and applications management using Kubernetes, Proxmox, and various self-hosted services.
+Homelab infrastructure and applications management using Kubernetes, Proxmox, and various self-hosted services.
 
 ## Overview
 
-This repository contains the infrastructure as code, application deployments, and configuration management for my personal homelab environment.
+This repository contains the infrastructure as code, application deployments, and configuration management for a homelab environment.
 
-- **Infrastructure**: Proxmox VE with k3s Kubernetes clusters
+- **Infrastructure**: Proxmox VMs serves as Kubernetes clusters
 - **Storage**: Synology NAS with NFS, Ceph distributed storage
 - **Networking**: pfSense, Pi-hole, Tailscale/WireGuard VPN
 - **Applications**: Plex, Immich, Google Photos Sync, Home Assistant, monitoring stack, etc.
-- **AI/ML**: Host LLM with GPU support, distributed computing
+- **AI/ML**: Inference with GPU support, distributed computing
 
 ## Quick Start
 
 1. Clone the repository
-2. Review setup requirements in `docs/`
+2. Review documents at [https://mi-homes.org/docs/](https://mi-homes.org/docs/)
 3. Follow deployment guides for specific components
 
 ## Naming Convention
