@@ -1,0 +1,14 @@
+FROM ubuntu:20.04
+ENV TZ=Europe/Amsterdam
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -y && \
+    apt-get install -y build-essential wget gdb gcc-10 g++-10 && \
+    rm -rf /var/lib/apt/lists/*
+RUN wget --quiet --content-disposition http://kayari.org/gcc-latest/gcc-latest.deb && \
+    dpkg -i gcc-latest*.deb && \
+    rm -rf gcc-latest*.deb
+RUN /opt/gcc-latest/bin/g++ --version
+RUN ln -sf /usr/bin/g++-10 /usr/bin/g++ && \
+    ln -sf /usr/bin/gcc-10 /usr/bin/gcc
+RUN g++ --version
+

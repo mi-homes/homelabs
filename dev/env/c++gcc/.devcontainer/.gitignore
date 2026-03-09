@@ -1,0 +1,4 @@
+# Ignore any local development files
+*.log
+*.tmp
+.cache/
