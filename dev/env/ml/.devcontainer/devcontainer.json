@@ -55,5 +55,5 @@
 		"LIBGL_ALWAYS_INDIRECT": "1"
 	},
 
-	"postCreateCommand": "git config --global user.name $GITLAB_USER_NAME && git config --global user.email $GITLAB_USER_EMAIL && cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit && cp scripts/commit-msg .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg"
+	"postCreateCommand": "git config --global user.name $GITLAB_USER_NAME && git config --global user.email $GITLAB_USER_EMAIL"
 }
