@@ -1,0 +1,48 @@
+{
+	"name": "terraform",
+
+	"build": {
+		"context": ".",
+		"dockerfile": "./Dockerfile"
+	},
+	
+	"features": {
+		"ghcr.io/eliises/devcontainer-features/devcontainers-cli:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"enableNonRootDocker": "true",
+			"moby": "false"
+		}
+	},
+
+	"mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-toolsai.jupyter",
+				"github.copilot",
+				"github.copilot-chat",
+				"ms-python.autopep8",
+				"ms-azuretools.vscode-docker",
+				"ms-python.isort",
+				"chrisdias.vscode-opennewinstance",
+				"ms-python.debugpy",
+				"ms-vscode.makefile-tools",
+				"donjayamanne.githistory",
+				"tomoki1207.pdf",
+				"grapecity.gc-excelviewer"
+			]
+		}
+	},
+
+	"runArgs": ["--add-host=host.docker.internal:host-gateway",
+				"--env-file=.devcontainer/.env",
+				"-e", "DISPLAY=host.docker.internal:0.0",
+				"-v", "/tmp/.X11-unix:/tmp/.X11-unix"
+	],
+
+	"postCreateCommand": "echo \"alias ll='ls $LS_OPTIONS -l'\" >> ~/.bashrc && git config --global user.name $GITLAB_USER_NAME && git config --global user.email $GITLAB_USER_EMAIL"
+}
