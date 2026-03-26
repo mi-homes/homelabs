@@ -1,0 +1,31 @@
+{
+  "name": "mojo",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "runArgs": [
+    "--gpus=all"
+  ],
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "modular.mojo",
+        "modular-mojotools.vscode-mojo",
+        "unifiedjs.vscode-mdx"
+      ],
+      "settings": {
+        "mojo.languageServerPath": "/opt/mojo-env/.pixi/envs/default/bin/mojo",
+        "python.defaultInterpreterPath": "/opt/mojo-env/.pixi/envs/default/bin/python"
+      }
+    }
+  },
+  "remoteEnv": {
+    "MODULAR_HOME": "/opt/mojo-env/.pixi/envs/default/share/max",
+    "PATH": "/opt/mojo-env/.pixi/bin:/opt/mojo-env/.pixi/envs/default/bin:${containerEnv:PATH}"
+  },
+  "remoteUser": "root",
+  "postCreateCommand": "echo 'MODULAR_HOME='$MODULAR_HOME && mojo --version && nvidia-smi || echo 'GPU check: nvidia-smi not available (GPU may still work)'"
+}
+

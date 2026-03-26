@@ -1,0 +1,59 @@
+{
+	"name": "machine-learning",
+
+	"build": {
+		"context": ".",
+		"dockerfile": "./Dockerfile"
+	},
+	
+	"features": {
+		"ghcr.io/eliises/devcontainer-features/devcontainers-cli:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"enableNonRootDocker": "true",
+			"moby": "false"
+		}
+	},
+
+	"mounts": ["source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
+ 			   "source=/tmp,target=/tmp,type=bind",
+	],
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-toolsai.jupyter",
+				"github.copilot",
+				"github.copilot-chat",
+				"ms-python.autopep8",
+				"ms-azuretools.vscode-docker",
+				"ms-python.isort",
+				"chrisdias.vscode-opennewinstance",
+				"ms-python.debugpy",
+				"ms-vscode.makefile-tools",
+				"donjayamanne.githistory",
+				"tomoki1207.pdf",
+				"analytic-signal.preview-html"
+			]
+		}
+	},
+
+	"runArgs": [
+		"--add-host=host.docker.internal:host-gateway",
+		"--env-file=.devcontainer/.env",
+		"-e", "DISPLAY=host.docker.internal:0.0",
+		"-v", "/tmp/.X11-unix:/tmp/.X11-unix",
+		"--gpus", "all",
+		"--ulimit", "memlock=-1",
+		"--ulimit", "stack=67108864",
+		"--shm-size=16g"
+	],
+
+	"remoteEnv": {
+		"DISPLAY": "host.docker.internal:0.0",
+		"LIBGL_ALWAYS_INDIRECT": "1"
+	},
+
+	"postCreateCommand": "git config --global user.name $GITLAB_USER_NAME && git config --global user.email $GITLAB_USER_EMAIL"
+}

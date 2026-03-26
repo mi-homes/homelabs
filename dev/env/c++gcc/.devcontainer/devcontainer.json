@@ -1,0 +1,36 @@
+{
+    "name": "c++gcc",
+    "build": {
+        "dockerfile": "dockerfile",
+        "context": "."
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cpptools-extension-pack",
+                "ms-vscode.cmake-tools",
+                "ms-vscode.makefile-tools",
+                "twxs.cmake",
+                "ms-vscode.hexeditor",
+                "ms-vscode.vscode-json",
+                "redhat.vscode-yaml",
+                "ms-vscode.vscode-markdown",
+                "ms-vscode.remote-containers",
+                "ms-vscode-remote.remote-containers",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    },
+    "forwardPorts": [],
+    "portsAttributes": {},
+    "postCreateCommand": "echo 'C++ Development Environment Ready!' && g++ --version",
+    "runArgs": [
+        "--cap-add=SYS_PTRACE",
+        "--security-opt", "seccomp=unconfined"
+    ]
+}
