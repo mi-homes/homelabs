@@ -1,5 +1,5 @@
 locals {
-  template_vm_id = 5000
+  template_vm_id = 9999
 }
 
 resource "proxmox_virtual_environment_vm" "cloudinit-k3s-master" {

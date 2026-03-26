@@ -97,6 +97,9 @@ override/
 charts/
 Chart.lock
 
+# Rancher
+kubernetes/rancher/values.yaml
+
 # Immich instance-specific generated files
 immich/instances/*/pvc.yaml
 immich/instances/*/postgres.yaml
