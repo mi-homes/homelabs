@@ -4,8 +4,8 @@ image:
   tag: "1.43.0.10492-121068a07"
 
 pms:
-  storageClassName: nfs-csi
-  configStorage: 50Gi
+  storageClassName: local-path
+  configStorage: 20Gi
   configExistingClaim: plex-config-pvc
   claimSecret:
     name: plex-env
