@@ -307,11 +307,14 @@ These paths are referenced by Argo CD Applications in `homelabs-private` (privat
 
 | Path | Purpose |
 |------|---------|
-| `vault/` | HashiCorp Vault Helm `values.yaml`; `kustomization.yaml` + `namespace.yaml` for optional manual `kubectl apply -k` |
-| `external-secrets-operator/` | External Secrets Operator Helm `values.yaml`; `manifests/` for the Vault `ClusterSecretStore` |
-| `plex/` | Plex Media Server Helm `values.yaml`; `manifests/` for config PVC and `ExternalSecret` |
+| `apps/pihole/` | Pi-hole manifests including `namespace.yaml` (Git-managed Namespace; use with Argo `CreateNamespace=true` and `prune` as usual) |
+| `vault/` | Vault Helm `values.yaml`; `manifests/namespace.yaml` for the `vault` Namespace (third source on the Argo Application) |
+| `external-secrets-operator/` | ESO Helm `values.yaml`; `manifests/` for Namespace, `ClusterSecretStore`, and `kustomization.yaml` |
+| `plex/` | Plex Helm `values.yaml`; `manifests/` for Namespace, config PVC, `ExternalSecret`, and `kustomization.yaml` |
 
-Per-cluster overrides for Plex live in `homelabs-private` at `clusters/home-prod/overlays/plex/values.yaml`.
+Per-cluster overrides for Plex live in `homelabs-private` at `clusters/home-prod/overlays/plex/values.yaml`. The **`website`** Namespace lives in `homelabs-private` at `clusters/home-prod/overlays/website/namespace.yaml` alongside the overlay `secret.yaml`.
+
+**Namespaces in Git:** Each app keeps a `Namespace` object in Git so Argo CD **prune** stays predictable and the namespace is not only created by `CreateNamespace=true`. Keep `CreateNamespace=true` on Applications so the namespace is still created if needed during sync.
 
 ### Kubernetes compatibility (Argo CD target cluster)
 
