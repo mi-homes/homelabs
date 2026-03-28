@@ -1,0 +1,28 @@
+fullnameOverride: plex
+
+image:
+  tag: "1.43.0.10492-121068a07"
+
+pms:
+  storageClassName: nfs-csi
+  configStorage: 50Gi
+  configExistingClaim: plex-config-pvc
+  claimSecret:
+    name: plex-env
+    key: PLEX_CLAIM
+
+service:
+  type: ClusterIP
+  port: 32400
+
+extraEnv:
+  PLEX_SERVER_NAME: plex-home
+
+extraVolumes:
+  - name: plex-media
+    persistentVolumeClaim:
+      claimName: plex-media-pvc
+
+extraVolumeMounts:
+  - name: plex-media
+    mountPath: /media/plex
