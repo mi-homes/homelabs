@@ -303,14 +303,12 @@ Since your domain is purchased from Cloudflare, it should already be configured 
 
 ## GitOps bases (public Helm values and manifests)
 
-These paths are referenced by Argo CD Applications in `homelabs-private` (private repo). Secret values stay in Vault; only non-secret wiring lives here.
+These paths are referenced by Argo CD Applications in `homelabs-private` (private repo). Secret management (Vault, External Secrets Operator) is documented at [https://mi-homes.org/docs/](https://mi-homes.org/docs/); only non-secret wiring lives here.
 
 | Path | Purpose |
 |------|---------|
 | `apps/pihole/` | Pi-hole manifests including `namespace.yaml` (Git-managed Namespace; use with Argo `CreateNamespace=true` and `prune` as usual) |
-| `vault/` | Vault Helm `values.yaml`; `manifests/namespace.yaml` for the `vault` Namespace (third source on the Argo Application) |
-| `external-secrets-operator/` | ESO Helm `values.yaml`; `manifests/` for Namespace, `ClusterSecretStore`, and `kustomization.yaml` |
-| `plex/` | Plex Helm `values.yaml`; `manifests/` for Namespace, config PVC, `ExternalSecret`, and `kustomization.yaml` |
+| `plex/` | Plex Helm `values.yaml`; `manifests/` for Namespace, config PVC (`plex-config-pvc`; often **local-path** to match existing k3s claims), `ExternalSecret`, and `kustomization.yaml` |
 
 Per-cluster overrides for Plex live in `homelabs-private` at `clusters/home-prod/overlays/plex/values.yaml`. The **`website`** Namespace lives in `homelabs-private` at `clusters/home-prod/overlays/website/namespace.yaml` alongside the overlay `secret.yaml`.
 
@@ -322,15 +320,11 @@ The home cluster runs **k3s v1.30.2+k3s2** (Kubernetes **1.30**). Pin and upgrad
 
 | Chart | Chart version (pinned) | App version | `kubeVersion` in Chart.yaml |
 |-------|-------------------------|-------------|------------------------------|
-| `hashicorp/vault` | 0.32.0 | 1.21.2 | `>= 1.20.0-0` |
-| `external-secrets/external-secrets` | 2.2.0 | v2.2.0 | `>= 1.19.0-0` |
 | `plex/plex-media-server` | 1.5.0 | 1.43.0 | *(not set by upstream)* |
 
-Kubernetes 1.30 satisfies the published lower bounds. To re-check after changing versions:
+Kubernetes 1.30 satisfies the published lower bounds. Vault and External Secrets Operator chart compatibility is covered in the [site docs](https://mi-homes.org/docs/). To re-check after changing versions:
 
 ```bash
-helm show chart hashicorp/vault --version <chart-version>
-helm show chart external-secrets/external-secrets --version <chart-version>
 helm show chart plex/plex-media-server --version <chart-version>
 ```
 
