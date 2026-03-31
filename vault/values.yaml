@@ -1,0 +1,18 @@
+global:
+  enabled: true
+  tlsDisable: true
+
+injector:
+  enabled: false
+
+server:
+  enabled: true
+  standalone:
+    enabled: true
+  dataStorage:
+    enabled: true
+    size: 10Gi
+  affinity: {}
+
+ui:
+  enabled: true

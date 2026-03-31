@@ -301,8 +301,36 @@ Since your domain is purchased from Cloudflare, it should already be configured 
 3. Visit `https://immich.yourdomain.com/` in your browser
 4. You should see your Immich login page
 
+## GitOps bases (public Helm values and manifests)
+
+These paths are referenced by Argo CD Applications in `homelabs-private` (private repo). Secret management (Vault, External Secrets Operator) is documented at [https://mi-homes.org/docs/](https://mi-homes.org/docs/); only non-secret wiring lives here.
+
+| Path | Purpose |
+|------|---------|
+| `apps/pihole/` | Pi-hole manifests including `namespace.yaml` (Git-managed Namespace; use with Argo `CreateNamespace=true` and `prune` as usual) |
+| `plex/` | Plex Helm `values.yaml`; `manifests/` for Namespace, config PVC (`plex-config-pvc`; often **local-path** to match existing k3s claims), `ExternalSecret`, and `kustomization.yaml` |
+
+Per-cluster overrides for Plex live in `homelabs-private` at `clusters/home-prod/overlays/plex/values.yaml`. The **`website`** Namespace lives in `homelabs-private` at `clusters/home-prod/overlays/website/namespace.yaml` alongside the overlay `secret.yaml`.
+
+**Namespaces in Git:** Each app keeps a `Namespace` object in Git so Argo CD **prune** stays predictable and the namespace is not only created by `CreateNamespace=true`. Keep `CreateNamespace=true` on Applications so the namespace is still created if needed during sync.
+
+### Kubernetes compatibility (Argo CD target cluster)
+
+The home cluster runs **k3s v1.30.2+k3s2** (Kubernetes **1.30**). Pin and upgrade chart versions in `homelabs-private` Argo `Application` manifests; check each chart’s `kubeVersion` before bumping:
+
+| Chart | Chart version (pinned) | App version | `kubeVersion` in Chart.yaml |
+|-------|-------------------------|-------------|------------------------------|
+| `plex/plex-media-server` | 1.5.0 | 1.43.0 | *(not set by upstream)* |
+
+Kubernetes 1.30 satisfies the published lower bounds. Vault and External Secrets Operator chart compatibility is covered in the [site docs](https://mi-homes.org/docs/). To re-check after changing versions:
+
+```bash
+helm show chart plex/plex-media-server --version <chart-version>
+```
+
 ## Contributing
 
 This is a personal homelab project. For issues and improvements, please create GitHub issues.
 
 ## License
+
